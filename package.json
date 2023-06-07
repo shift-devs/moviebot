@@ -1,0 +1,31 @@
+{
+  "name": "memebot2",
+  "version": "0.0.1",
+  "description": "Meme bot for shift's discord",
+  "main": "build/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "cd build && node main.js",
+    "clean": "rm -rf build node_modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shift-devs/memebot2.git"
+  },
+  "keywords": [
+    "memes"
+  ],
+  "author": "The_Ivo_Robotnic",
+  "license": "GPL-2.0-only",
+  "bugs": {
+    "url": "https://github.com/shift-devs/memebot2/issues"
+  },
+  "homepage": "https://github.com/shift-devs/memebot2#readme",
+  "dependencies": {
+    "argparse": "^2.0.1",
+    "discord.js": "^14.11.0",
+    "install": "^0.13.0",
+    "logging": "^3.3.0",
+    "npm": "^9.6.7"
+  }
+}
