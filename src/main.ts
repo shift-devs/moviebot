@@ -73,9 +73,9 @@ async function handle_get_leaderboard(command: CommandInteraction, db: RedisClie
     for await (const key of db.scanIterator()) {
         if(re.test(key)) {
             try {
-                // const user: User = await command.client.users.fetch(key);
-                // const username: string = user.tag;
-                users.push([key, parseInt(await db.get(key))]);
+                const user: User = await command.client.users.fetch(key);
+                const username: string = user.tag;
+                users.push([username, parseInt(await db.get(key))]);
             } catch(err) { log.error(err); }
         }
     }
