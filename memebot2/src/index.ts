@@ -1,3 +1,5 @@
+import { ArgumentParser } from 'argparse'
+import { name, description, version } from '../package.json'
 import { APIInteractionGuildMember, APIUser, BaseInteraction, Client, CommandInteraction, DMChannel, GatewayIntentBits, Guild, GuildMember, GuildTextBasedChannel, Interaction, Message, MessagePayload, PermissionsBitField, TextChannel, User, userMention } from "discord.js";
 import { REST, Routes } from 'discord.js';
 import { RedisClientType, createClient } from 'redis';
@@ -120,7 +122,14 @@ async function handle_message_recv(message: Message, db: RedisClientType) {
     }
 }
 
-async function main() {
+export async function main() {
+    // setup argparser
+    const parser = new ArgumentParser({
+        'prog': name,
+        'description': description
+    })
+    const args = parser.parse_args()
+
     // Establish redis connection
     const db: RedisClientType = createClient({
         url: "redis://localhost:6379"

@@ -1,40 +1,28 @@
 FROM archlinux
 
-# ARGS
-ARG USER
-ENV USER="bot"
+ARG APP_HOME
+ENV APP_HOME="/opt/bot/"
 
-ARG MOD_HOME
-ENV MOD_HOME="/opt/bot"
+ARG MEMEBOT2_CLIENT_ID
+ENV MEMEBOT2_CLIENT_ID=$MEMEBOT2_CLIENT_ID
 
-ENV MOD_ENV="/etc/modcast"
-ENV MOD_BIN="/usr/bin/modcast-twitch-bot"
+ARG MEMEBOT2_TOKEN
+ENV MEMEBOT2_TOKEN=$MEMEBOT2_TOKEN
 
 # Install dependencies
-RUN pacman -Syyuu --quiet --noconfirm
-# RUN pacman -S vim --noconfirm
+RUN pacman -Syy --quiet --noconfirm
+RUN pacman -S nodejs npm --noconfirm
 
-# Create the Modcast User
-COPY configs/modcast.conf /usr/lib/sysusers.d
-RUN systemd-sysusers
-RUN mkdir -p ${MOD_HOME}
-
-# Install Modcast Configs and Executable
-RUN mkdir -p ${MOD_ENV}
-COPY ./configs/modcast.json ${MOD_ENV}
-COPY ./configs/modcast-twitch-bot ${MOD_BIN}
+# Install bot src
+RUN mkdir -p ${APP_HOME}
+COPY ./build/* ${APP_HOME}
 
 # Fix permissions and ownership
-RUN chown -R root:root ${MOD_ENV}
-RUN chmod -R 755 ${MOD_ENV}
-RUN chmod -R 644 ${MOD_ENV}/*
-RUN chown -R root:root ${MOD_BIN}
-RUN chmod -R 755 ${MOD_BIN}
-
-# Expose ports
-EXPOSE 4455
+RUN chown -R root:root ${APP_HOME}
+RUN chmod -R 755 ${APP_HOME}
 
 # Entrypoint
-USER ${USER}
+WORKDIR ${APP_HOME}
+RUN npm install
 # CMD ["/usr/bin/bash"]
-ENTRYPOINT ["modcast-twitch-bot", "-oh", "10.0.0.4"]
+ENTRYPOINT ["node", "main.js"]
