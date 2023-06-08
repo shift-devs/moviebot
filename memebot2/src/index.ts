@@ -3,6 +3,7 @@ import { name, description, version } from '../package.json'
 import { APIInteractionGuildMember, APIUser, BaseInteraction, Client, CommandInteraction, DMChannel, GatewayIntentBits, Guild, GuildMember, GuildTextBasedChannel, Interaction, Message, MessagePayload, PermissionsBitField, TextChannel, User, userMention } from "discord.js";
 import { REST, Routes } from 'discord.js';
 import { RedisClientType, createClient } from 'redis';
+import { match } from 'assert';
 
 // Setup the global logger
 const createLogger = require('logging')
@@ -10,7 +11,7 @@ export const log = createLogger.default('memebot2.1')
 
 // Setup globals
 const KEYWORD = "movie";
-const LEADERBOARD_MAX = 4;
+const LEADERBOARD_MAX = 16;
 const CHANNEL_ID_KEY = "movie-channel";
 const CLIENT_ID = process.env.MEMEBOT2_CLIENT_ID;
 const TOKEN = process.env.MEMEBOT2_TOKEN;
@@ -75,9 +76,7 @@ async function handle_get_leaderboard(command: CommandInteraction, db: RedisClie
     for await (const key of db.scanIterator()) {
         if(re.test(key)) {
             try {
-                const user: User = await command.client.users.fetch(key);
-                const username: string = user.tag;
-                users.push([username, parseInt(await db.get(key))]);
+                users.push([key, parseInt(await db.get(key))]);
             } catch(err) { log.error(err); }
         }
     }
@@ -87,9 +86,14 @@ async function handle_get_leaderboard(command: CommandInteraction, db: RedisClie
 
     var message = "```\nAll-Time MovieMadness Leaderboard:\n----------------------------------\n\n";
     for(let i = 0; i < leaderboardSize; i++) {
-        const entry = users[i];
-        log.info(entry);
-        message += `${i}. ${entry[0]} (${entry[1]} times)\n`
+        const entry = users[i]; // Get the tuple
+        
+        // Fetch the username
+        const user: User = await command.client.users.fetch(entry[0]);
+        const username: string = user.tag;
+
+        // Append to leaderboard string
+        message += `${i + 1}. ${username} (${entry[1]} times)\n`
     }
     message += "```\n"
     await command.reply(message);
@@ -114,11 +118,13 @@ async function handle_message_recv(message: Message, db: RedisClientType) {
     }
 
     // Check if movie was said
-    const re = new RegExp('^.*movie.*$', 'i');
-    if (re.test(content)) {
-        message.react("🤔");
+    const matches = content.match(/movie/ig);
+    log.info(`Got ${matches.length} results: ${matches}`);
+    if (matches.length > 0) {
         log.info(`[${user.tag} in <${guild.name}#${channel.name}>]: \"${content}\"`);
-        db.incr(user.id);
+        for (let i = 0; i < matches.length; i++) {
+            await db.incr(user.id);
+        }
     }
 }
 
@@ -147,7 +153,6 @@ export async function main() {
         intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.GuildMessageReactions,
             GatewayIntentBits.DirectMessages,
             GatewayIntentBits.MessageContent
         ]
