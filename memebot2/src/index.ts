@@ -55,9 +55,9 @@ async function handle_get_movie_counter(command: CommandInteraction, db: RedisCl
     const user: GuildMember = command.member as GuildMember;
     const permissions: Readonly<PermissionsBitField> = command.memberPermissions;
 
-    log.info(`Got /${commandName} in ${guildName}@${channelName} from ${user.displayName}`);  
+    log.info(`Got /${commandName} in ${guildName}@${channelName} from ${user.displayName}`);
     const counter: any = await db.get(user.id);
-    if(counter === null) {
+    if (counter === null) {
         command.reply(`You haven't said \`${KEYWORD}\` in this channel yet!`);
         return;
     }
@@ -74,20 +74,20 @@ async function handle_get_leaderboard(command: CommandInteraction, db: RedisClie
     let users = [];
     const re = new RegExp('^[0-9]+$');
     for await (const key of db.scanIterator()) {
-        if(re.test(key)) {
+        if (re.test(key)) {
             try {
                 users.push([key, parseInt(await db.get(key))]);
-            } catch(err) { log.error(err); }
+            } catch (err) { log.error(err); }
         }
     }
-    users.sort(([,a], [,b]) => a - b).reverse();
+    users.sort(([, a], [, b]) => a - b).reverse();
     const leaderboardSize = (users.length < LEADERBOARD_MAX) ? users.length : LEADERBOARD_MAX;
     log.info(`Found ${leaderboardSize} users for the leaderboard!`);
 
     var message = "```\nAll-Time MovieMadness Leaderboard:\n----------------------------------\n\n";
-    for(let i = 0; i < leaderboardSize; i++) {
+    for (let i = 0; i < leaderboardSize; i++) {
         const entry = users[i]; // Get the tuple
-        
+
         // Fetch the username
         const user: User = await command.client.users.fetch(entry[0]);
         const username: string = user.tag;
@@ -113,14 +113,14 @@ async function handle_message_recv(message: Message, db: RedisClientType) {
     } else if (channel.id !== channelId.toString()) { return; }
 
     // Ignore if the message is from a bot
-    if(user.bot) {
+    if (user.bot) {
         return;
     }
 
     // Check if movie was said
     const matches = content.match(/movie/ig);
-    log.info(`Got ${matches.length} results: ${matches}`);
-    if (matches.length > 0) {
+    if (matches !== null && (matches.length > 0)) {
+        log.info(`Got ${matches.length} results: ${matches}`);
         log.info(`[${user.tag} in <${guild.name}#${channel.name}>]: \"${content}\"`);
         for (let i = 0; i < matches.length; i++) {
             await db.incr(user.id);
