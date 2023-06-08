@@ -1,0 +1,29 @@
+{
+  "name": "memebot2",
+  "version": "2.0.1",
+  "description": "Meme bot for shift's discord",
+  "main": "build/src/index.js",
+  "dependencies": {
+    "argparse": "^2.0.1",
+    "discord.js": "^14.11.0",
+    "install": "^0.13.0",
+    "logging": "^3.3.0",
+    "npm": "^8.19.2",
+    "redis": "^4.6.7"
+  },
+  "scripts": {
+    "start": "node build/src/index.js",
+    "clean": "rm -rf build node_modules package-lock.json",
+    "dev": "tsc-watch --onCompilationStarted 'npm install' --onSuccess 'npm start'",
+    "package": "mkdir -p ../docker/twitch-bot/configs && npm install && tsc && pkg --out-path ../docker/twitch-bot/configs --targets linux --compress gzip ."
+  },
+  "pkg": {
+    "scripts": "build/src/*.js"
+  },
+  "bin": {
+    "execute": "build/src/index.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.0"
+  }
+}

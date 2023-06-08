@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+    memebot2:
+        build:
+            context: ./
+        image: memebot2:latest
+        container_name: memebot2
+        deploy:
+            replicas: 0
+            restart_policy:
+                condition: on-failure
